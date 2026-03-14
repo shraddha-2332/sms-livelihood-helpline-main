@@ -85,11 +85,27 @@ def receive_sms():
             user.last_active = datetime.utcnow()
         
         # Create message record
+        demo_intent_map = {
+            'loan': 'loan_query',
+            'training': 'training_query',
+            'scheme': 'scheme_query',
+            'job': 'job_query',
+            'agri': 'agri_support'
+        }
+        lower_text = text.lower()
+        demo_intent = None
+        for key, val in demo_intent_map.items():
+            if key in lower_text:
+                demo_intent = val
+                break
+
         message = Message(
             user_id=user.id,
             direction='in',
             text=text,
-            status='pending'
+            status='pending',
+            intent=demo_intent,
+            confidence=0.8 if demo_intent else None
         )
         db.session.add(message)
         db.session.commit()

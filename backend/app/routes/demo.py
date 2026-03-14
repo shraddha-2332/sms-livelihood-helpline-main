@@ -25,6 +25,15 @@ def seed_demo_data():
             'Guidance on employment registration'
         ]
         categories = ['loan', 'training', 'schemes', 'employment', 'agriculture', 'finance', 'general']
+        intent_map = {
+            'loan': 'loan_query',
+            'training': 'training_query',
+            'schemes': 'scheme_query',
+            'employment': 'job_query',
+            'agriculture': 'agri_support',
+            'finance': 'finance_query',
+            'general': 'general_help'
+        }
         priorities = ['low', 'medium', 'high', 'urgent']
         statuses = ['open', 'assigned', 'resolved']
         
@@ -39,6 +48,8 @@ def seed_demo_data():
             
             subject = random.choice(subjects)
             category = random.choice(categories)
+            intent = intent_map.get(category, 'general_help')
+            confidence = round(random.uniform(0.6, 0.95), 2)
             priority = random.choice(priorities)
             status = random.choice(statuses)
             created_at = datetime.utcnow() - timedelta(days=random.randint(0, 14), hours=random.randint(0, 10))
@@ -63,6 +74,8 @@ def seed_demo_data():
                 direction='in',
                 text=subject,
                 status='processed',
+                intent=intent,
+                confidence=confidence,
                 created_at=created_at
             )
             db.session.add(inbound)
