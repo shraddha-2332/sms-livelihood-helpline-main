@@ -1,7 +1,7 @@
 ﻿from flask import Blueprint, request, jsonify
 from app import db
 from app.utils.redis_client import get_redis_client
-from app.models import User, Message
+from app.models import User, Message, Ticket
 import redis
 import json
 import hashlib
@@ -93,6 +93,28 @@ def receive_sms():
         )
         db.session.add(message)
         db.session.commit()
+
+        # Demo mode: create ticket immediately without worker
+        demo_direct = request.args.get('demo') in ('1', 'true', 'yes')
+        if demo_direct:
+            ticket = Ticket(
+                user_id=user.id,
+                subject=text[:100],
+                category='general',
+                priority='medium',
+                status='open'
+            )
+            db.session.add(ticket)
+            db.session.flush()
+            message.ticket_id = ticket.id
+            message.status = 'processed'
+            db.session.commit()
+            return jsonify({
+                'status': 'created',
+                'ticket_id': ticket.id,
+                'message_id': message.id,
+                'user_id': user.id
+            }), 201
         
         # Queue for processing
         queue_data = {

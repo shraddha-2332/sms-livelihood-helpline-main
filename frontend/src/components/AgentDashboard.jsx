@@ -59,7 +59,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
         from: '+919834522785',
         body: 'I need information about loans for farmers'
       }
-      await fetch(`${API_BASE}/webhook/sms`, {
+      await fetch(`${API_BASE}/webhook/sms?demo=1`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
