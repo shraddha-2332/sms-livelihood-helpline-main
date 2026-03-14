@@ -17,6 +17,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
   const [refreshing, setRefreshing] = useState(false)
   const [creatingDemo, setCreatingDemo] = useState(false)
   const [seedingDemo, setSeedingDemo] = useState(false)
+  const [resettingDemo, setResettingDemo] = useState(false)
   const [smsPhone, setSmsPhone] = useState('+91')
   const [smsText, setSmsText] = useState('')
   const [sendingSms, setSendingSms] = useState(false)
@@ -87,6 +88,20 @@ export default function AgentDashboard({ onStatsUpdate }) {
       alert('Failed to seed demo data. Please try again.')
     } finally {
       setSeedingDemo(false)
+    }
+  }
+
+  const handleResetDemoData = async () => {
+    if (!confirm('This will clear demo tickets. Continue?')) return
+    try {
+      setResettingDemo(true)
+      await fetch(`${API_BASE}/api/demo/reset`, { method: 'POST' })
+      fetchTickets(true)
+    } catch (error) {
+      console.error('Error resetting demo data:', error)
+      alert('Failed to reset demo data. Please try again.')
+    } finally {
+      setResettingDemo(false)
     }
   }
 
@@ -207,6 +222,14 @@ export default function AgentDashboard({ onStatsUpdate }) {
               title="Seed demo data"
             >
               {seedingDemo ? 'Seeding...' : 'Seed Demo Data'}
+            </button>
+            <button
+              onClick={handleResetDemoData}
+              disabled={resettingDemo}
+              className="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+              title="Reset demo data"
+            >
+              {resettingDemo ? 'Resetting...' : 'Reset Demo Data'}
             </button>
           </div>
         </div>

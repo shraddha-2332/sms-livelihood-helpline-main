@@ -6,6 +6,7 @@ export default function Admin() {
   const [agents, setAgents] = useState([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -42,6 +43,46 @@ export default function Admin() {
       fetchAgents()
     } catch (error) {
       console.error('Error updating agent:', error)
+    }
+  }
+
+  const handleDelete = async (agent) => {
+    if (!confirm(`Delete agent ${agent.name}?`)) return
+    try {
+      await fetch(`${API_BASE}/api/agents/${agent.id}`, { method: 'DELETE' })
+      fetchAgents()
+    } catch (error) {
+      console.error('Error deleting agent:', error)
+      alert('Failed to delete agent.')
+    }
+  }
+
+  const openEdit = (agent) => {
+    setEditing({
+      id: agent.id,
+      name: agent.name,
+      email: agent.email,
+      phone: agent.phone || '',
+      role: agent.role,
+      specialization: agent.specialization,
+      max_concurrent_tickets: agent.max_concurrent_tickets || 10,
+      password: ''
+    })
+  }
+
+  const submitEdit = async (e) => {
+    e.preventDefault()
+    try {
+      await fetch(`${API_BASE}/api/agents/${editing.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editing)
+      })
+      setEditing(null)
+      fetchAgents()
+    } catch (error) {
+      console.error('Error updating agent:', error)
+      alert('Failed to update agent.')
     }
   }
 
@@ -191,13 +232,18 @@ export default function Admin() {
                         {agent.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td>
+                    <td className="flex gap-2 py-2">
                       <button
-                        onClick={() => toggleActive(agent)}
+                        onClick={() => openEdit(agent)}
                         className="inline-flex items-center gap-1 text-xs px-2 py-1 border border-gray-200 rounded hover:bg-gray-50"
                       >
-                        {agent.is_active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
-                        {agent.is_active ? 'Deactivate' : 'Activate'}
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(agent)}
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 border border-red-200 text-red-600 rounded hover:bg-red-50"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -207,6 +253,92 @@ export default function Admin() {
           </div>
         )}
       </div>
+
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Agent</h3>
+            <form onSubmit={submitEdit} className="space-y-3">
+              <input
+                type="text"
+                value={editing.name}
+                onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Name"
+                required
+              />
+              <input
+                type="email"
+                value={editing.email}
+                onChange={(e) => setEditing({ ...editing, email: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Email"
+                required
+              />
+              <input
+                type="tel"
+                value={editing.phone}
+                onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Phone"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <select
+                  value={editing.role}
+                  onChange={(e) => setEditing({ ...editing, role: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="agent">Agent</option>
+                  <option value="supervisor">Supervisor</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <select
+                  value={editing.specialization}
+                  onChange={(e) => setEditing({ ...editing, specialization: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="general">General</option>
+                  <option value="agriculture">Agriculture</option>
+                  <option value="finance">Finance</option>
+                  <option value="training">Training</option>
+                  <option value="employment">Employment</option>
+                </select>
+              </div>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={editing.max_concurrent_tickets}
+                onChange={(e) => setEditing({ ...editing, max_concurrent_tickets: Number(e.target.value) })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Max concurrent tickets"
+              />
+              <input
+                type="text"
+                value={editing.password}
+                onChange={(e) => setEditing({ ...editing, password: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="New password (optional)"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditing(null)}
+                  className="px-4 py-2 bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

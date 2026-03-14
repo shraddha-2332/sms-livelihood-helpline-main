@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app import db
-from app.models import User, Ticket, Message, Agent
+from app.models import User, Ticket, Message, Agent, VoiceCall
 from datetime import datetime, timedelta
 import random
 
@@ -122,6 +122,20 @@ def seed_demo_data():
         db.session.commit()
         return jsonify({'status': 'ok', 'created': created}), 201
         
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@demo_bp.route('/api/demo/reset', methods=['POST'])
+def reset_demo_data():
+    """Clear demo tickets/messages/voice calls for a fresh demo."""
+    try:
+        # Delete messages first, then tickets, then voice calls
+        db.session.query(Message).delete()
+        db.session.query(Ticket).delete()
+        db.session.query(VoiceCall).delete()
+        db.session.commit()
+        return jsonify({'status': 'ok', 'message': 'Demo data cleared'}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
