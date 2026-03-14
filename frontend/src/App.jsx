@@ -4,6 +4,7 @@ import AgentDashboard from './components/AgentDashboard'
 import Analytics from './components/Analytics'
 import VoiceRecorder from './components/VoiceRecorder'
 import Reports from './components/Reports'
+import Impact from './components/Impact'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import { Menu, X, LogOut } from 'lucide-react'
@@ -136,6 +137,7 @@ function App() {
                 <p className="text-sm text-gray-600">
                   {currentView === 'dashboard' && 'Ticket Management Dashboard'}
                   {currentView === 'analytics' && 'Analytics & Reports'}
+                  {currentView === 'impact' && 'Impact & Outcomes'}
                   {currentView === 'voice' && 'Voice Call Management'}
                   {currentView === 'reports' && 'Advanced Reports'}
                 </p>
@@ -170,6 +172,9 @@ function App() {
           )}
           {currentView === 'analytics' && (
             <Analytics token={token} />
+          )}
+          {currentView === 'impact' && (
+            <Impact />
           )}
           {currentView === 'voice' && (
             <VoiceRecorder />

@@ -24,6 +24,7 @@ def create_app(config_class=Config):
     from app.routes.voice import voice_bp
     from app.routes.auth import auth_bp
     from app.routes.report import reports_bp
+    from app.routes.demo import demo_bp
     
     app.register_blueprint(webhook_bp, url_prefix='/webhook')
     app.register_blueprint(tickets_bp, url_prefix='/api/tickets')
@@ -32,6 +33,7 @@ def create_app(config_class=Config):
     app.register_blueprint(voice_bp, url_prefix='/api/voice')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(reports_bp)
+    app.register_blueprint(demo_bp)
     
     # Create tables (best-effort to avoid race on startup)
     with app.app_context():

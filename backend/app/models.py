@@ -1,6 +1,7 @@
 from app import db
-from datetime import datetime
+from datetime import datetime, date
 import json
+from app.utils.urgency import is_urgent_text
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -74,8 +75,12 @@ class Ticket(db.Model):
     
     # Relationships
     messages = db.relationship('Message', backref='ticket', lazy='dynamic')
+    resolution = db.relationship('TicketResolution', backref='ticket', uselist=False)
     
-    def to_dict(self, include_messages=False):
+    def to_dict(self, include_messages=False, include_resolution=False):
+        last_message_obj = self.messages.order_by(Message.created_at.desc()).first()
+        last_message_text = last_message_obj.text if last_message_obj else None
+        urgent_flag = is_urgent_text(self.subject or '') or is_urgent_text(last_message_text or '')
         data = {
             'id': self.id,
             'user_id': self.user_id,
@@ -86,17 +91,40 @@ class Ticket(db.Model):
             'subject': self.subject,
             'category': self.category,
             'priority': self.priority,
+            'is_urgent': urgent_flag,
             'status': self.status,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
-            'last_message': self.messages.order_by(Message.created_at.desc()).first().text if self.messages.count() > 0 else None
+            'last_message': last_message_text
         }
         
         if include_messages:
             data['messages'] = [msg.to_dict() for msg in self.messages.order_by(Message.created_at.asc())]
+
+        if include_resolution and self.resolution:
+            data['resolution'] = self.resolution.to_dict()
         
         return data
+
+class TicketResolution(db.Model):
+    __tablename__ = 'ticket_resolutions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'), unique=True, nullable=False)
+    resolution_type = db.Column(db.String(50))  # info_provided, referral, follow_up
+    follow_up_date = db.Column(db.Date)
+    outcome_summary = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'ticket_id': self.ticket_id,
+            'resolution_type': self.resolution_type,
+            'follow_up_date': self.follow_up_date.isoformat() if self.follow_up_date else None,
+            'outcome_summary': self.outcome_summary,
+            'created_at': self.created_at.isoformat()
+        }
 
 class Agent(db.Model):
     __tablename__ = 'agents'

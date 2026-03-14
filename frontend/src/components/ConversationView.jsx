@@ -19,11 +19,17 @@ export default function ConversationView({ ticket, onUpdate }) {
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState(null)
+  const [showResolution, setShowResolution] = useState(false)
+  const [resolutionType, setResolutionType] = useState('info_provided')
+  const [followUpDate, setFollowUpDate] = useState('')
+  const [outcomeSummary, setOutcomeSummary] = useState('')
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
     if (ticket) {
       fetchTicketDetails()
+      fetchProfile()
     }
   }, [ticket?.id])
 
@@ -40,6 +46,15 @@ export default function ConversationView({ ticket, onUpdate }) {
       console.error('Error fetching ticket details:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchProfile = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/api/tickets/${ticket.id}/profile`)
+      setProfile(response.data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
     }
   }
 
@@ -72,6 +87,10 @@ export default function ConversationView({ ticket, onUpdate }) {
 
   const handleStatusChange = async (newStatus) => {
     try {
+      if (newStatus === 'resolved') {
+        setShowResolution(true)
+        return
+      }
       await axios.put(`${API_BASE}/api/tickets/${ticket.id}/status`, {
         status: newStatus
       })
@@ -81,6 +100,57 @@ export default function ConversationView({ ticket, onUpdate }) {
       alert('Failed to update status. Please try again.')
     }
   }
+
+  const handleSubmitResolution = async (e) => {
+    e.preventDefault()
+    try {
+      await axios.post(`${API_BASE}/api/tickets/${ticket.id}/resolution`, {
+        resolution_type: resolutionType,
+        follow_up_date: followUpDate || null,
+        outcome_summary: outcomeSummary
+      })
+      setShowResolution(false)
+      setOutcomeSummary('')
+      setFollowUpDate('')
+      setResolutionType('info_provided')
+      onUpdate()
+    } catch (error) {
+      console.error('Error saving resolution:', error)
+      alert('Failed to save resolution. Please try again.')
+    }
+  }
+
+  const suggestedRepliesByCategory = {
+    loan: [
+      'Please share your district and the type of loan you need. We will send the latest options.',
+      'We can help with eligibility and required documents. Do you have Aadhaar and income proof?'
+    ],
+    training: [
+      'We can connect you with nearby training centers. Which skill are you interested in?',
+      'Please share your age and education level so we can suggest suitable programs.'
+    ],
+    schemes: [
+      'We can guide you through government schemes. Please share your district and occupation.',
+      'Do you have an existing scheme card or application number?'
+    ],
+    employment: [
+      'We can help you find local job opportunities. What kind of work are you looking for?',
+      'Please share your location and any experience you have.'
+    ],
+    agriculture: [
+      'We can assist with crop guidance and subsidies. Which crop and season are you planning?',
+      'Please share your land size and irrigation availability.'
+    ],
+    finance: [
+      'We can guide you on microfinance options. Do you already have a bank account?',
+      'Please share your monthly income range so we can suggest the best option.'
+    ],
+    general: [
+      'Thank you for reaching out. Please share more details so we can assist you.',
+      'We are here to help. What is the main issue you are facing?'
+    ]
+  }
+  const suggestedReplies = suggestedRepliesByCategory[ticket.category] || suggestedRepliesByCategory.general
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp)
@@ -180,6 +250,29 @@ export default function ConversationView({ ticket, onUpdate }) {
             Created {new Date(ticket.created_at).toLocaleString()}
           </span>
         </div>
+
+        {/* Citizen Profile */}
+        {profile && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Citizen</p>
+              <p className="font-medium text-gray-900">{profile.user.name || profile.user.phone}</p>
+              <p className="text-xs text-gray-500">{profile.user.language || 'en'} • {profile.user.phone}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Total Tickets</p>
+              <p className="text-lg font-semibold text-gray-900">{profile.total_tickets}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Resolved</p>
+              <p className="text-lg font-semibold text-gray-900">{profile.resolved_tickets}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Most Common Topic</p>
+              <p className="text-sm font-semibold text-gray-900">{profile.most_common_category || 'N/A'}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -251,6 +344,21 @@ export default function ConversationView({ ticket, onUpdate }) {
       {/* Input Area */}
       {ticket.status !== 'closed' && (
         <div className="px-6 py-4 border-t border-gray-200">
+          {/* Suggested Replies */}
+          <div className="mb-3">
+            <p className="text-xs font-semibold text-gray-500 mb-2">Suggested reply</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedReplies.map((reply, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setNewMessage(reply)}
+                  className="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+          </div>
           <form onSubmit={handleSendMessage} className="flex gap-3">
             <input
               type="text"
@@ -278,6 +386,64 @@ export default function ConversationView({ ticket, onUpdate }) {
               )}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Resolution Modal */}
+      {showResolution && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Resolution Summary</h3>
+            <form onSubmit={handleSubmitResolution} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Resolution Type</label>
+                <select
+                  value={resolutionType}
+                  onChange={(e) => setResolutionType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="info_provided">Information Provided</option>
+                  <option value="referral">Referral</option>
+                  <option value="follow_up">Scheduled Follow-up</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date (optional)</label>
+                <input
+                  type="date"
+                  value={followUpDate}
+                  onChange={(e) => setFollowUpDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Outcome Summary</label>
+                <textarea
+                  value={outcomeSummary}
+                  onChange={(e) => setOutcomeSummary(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Briefly describe the resolution provided..."
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResolution(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Save & Resolve
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

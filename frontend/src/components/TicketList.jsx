@@ -61,6 +61,11 @@ export default function TicketList({ tickets, selectedTicket, onSelectTicket }) 
                 <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(ticket.status)}`}>
                   {ticket.status}
                 </span>
+                {ticket.is_urgent && (
+                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                    urgent
+                  </span>
+                )}
               </div>
               <span className="text-xs text-gray-500">
                 {formatTime(ticket.updated_at)}
@@ -68,7 +73,7 @@ export default function TicketList({ tickets, selectedTicket, onSelectTicket }) 
             </div>
 
             {/* Subject */}
-            <h4 className="font-medium text-gray-900 mb-1 truncate">
+            <h4 className={`font-medium mb-1 truncate ${ticket.is_urgent ? 'text-red-700' : 'text-gray-900'}`}>
               {ticket.subject || 'No subject'}
             </h4>
 

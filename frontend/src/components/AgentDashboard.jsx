@@ -16,6 +16,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [creatingDemo, setCreatingDemo] = useState(false)
+  const [seedingDemo, setSeedingDemo] = useState(false)
 
   useEffect(() => {
     fetchTickets()
@@ -70,6 +71,19 @@ export default function AgentDashboard({ onStatsUpdate }) {
       alert('Failed to create demo ticket. Please try again.')
     } finally {
       setCreatingDemo(false)
+    }
+  }
+
+  const handleSeedDemoData = async () => {
+    try {
+      setSeedingDemo(true)
+      await fetch(`${API_BASE}/api/demo/seed`, { method: 'POST' })
+      fetchTickets(true)
+    } catch (error) {
+      console.error('Error seeding demo data:', error)
+      alert('Failed to seed demo data. Please try again.')
+    } finally {
+      setSeedingDemo(false)
     }
   }
 
@@ -154,6 +168,14 @@ export default function AgentDashboard({ onStatsUpdate }) {
               title="Create a demo ticket"
             >
               {creatingDemo ? 'Creating...' : 'Create Demo Ticket'}
+            </button>
+            <button
+              onClick={handleSeedDemoData}
+              disabled={seedingDemo}
+              className="px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-black disabled:opacity-50"
+              title="Seed demo data"
+            >
+              {seedingDemo ? 'Seeding...' : 'Seed Demo Data'}
             </button>
           </div>
         </div>

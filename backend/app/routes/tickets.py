@@ -1,9 +1,9 @@
 ﻿from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Ticket, Message, User, Agent
+from app.models import Ticket, Message, User, Agent, TicketResolution
 from app.services.sms_service import send_sms
 from datetime import datetime
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 
 tickets_bp = Blueprint('tickets', __name__)
 
@@ -60,7 +60,7 @@ def get_ticket(ticket_id):
         if not ticket:
             return jsonify({'error': 'Ticket not found'}), 404
         
-        return jsonify(ticket.to_dict(include_messages=True)), 200
+        return jsonify(ticket.to_dict(include_messages=True, include_resolution=True)), 200
         
     except Exception as e:
         print(f"[ERROR] Error getting ticket: {str(e)}")
@@ -233,6 +233,85 @@ def update_ticket_status(ticket_id):
     except Exception as e:
         db.session.rollback()
         print(f"[ERROR] Error updating ticket status: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@tickets_bp.route('/<int:ticket_id>/resolution', methods=['POST', 'PUT'])
+def upsert_ticket_resolution(ticket_id):
+    """Create or update resolution details for a ticket"""
+    try:
+        ticket = Ticket.query.get(ticket_id)
+        
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
+        data = request.get_json() or {}
+        resolution_type = data.get('resolution_type')
+        follow_up_date = data.get('follow_up_date')
+        outcome_summary = data.get('outcome_summary')
+        
+        resolution = TicketResolution.query.filter_by(ticket_id=ticket_id).first()
+        if not resolution:
+            resolution = TicketResolution(ticket_id=ticket_id)
+            db.session.add(resolution)
+        
+        resolution.resolution_type = resolution_type
+        if follow_up_date:
+            try:
+                resolution.follow_up_date = datetime.fromisoformat(follow_up_date).date()
+            except ValueError:
+                return jsonify({'error': 'Invalid follow_up_date format'}), 400
+        else:
+            resolution.follow_up_date = None
+        resolution.outcome_summary = outcome_summary
+        
+        # Mark ticket resolved by default if provided
+        ticket.status = 'resolved'
+        ticket.resolved_at = datetime.utcnow()
+        ticket.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'ticket': ticket.to_dict(include_resolution=True),
+            'resolution': resolution.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"[ERROR] Error saving resolution: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@tickets_bp.route('/<int:ticket_id>/profile', methods=['GET'])
+def get_ticket_profile(ticket_id):
+    """Get citizen profile details for the ticket's user"""
+    try:
+        ticket = Ticket.query.get(ticket_id)
+        if not ticket:
+            return jsonify({'error': 'Ticket not found'}), 404
+        
+        user = User.query.get(ticket.user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        total_tickets = Ticket.query.filter_by(user_id=user.id).count()
+        resolved_tickets = Ticket.query.filter_by(user_id=user.id, status='resolved').count()
+        
+        category_counts = db.session.query(Ticket.category, func.count(Ticket.id).label('count')) \
+            .filter(Ticket.user_id == user.id) \
+            .group_by(Ticket.category) \
+            .order_by(func.count(Ticket.id).desc()) \
+            .all()
+        most_common_category = category_counts[0].category if category_counts else None
+        
+        return jsonify({
+            'user': user.to_dict(),
+            'total_tickets': total_tickets,
+            'resolved_tickets': resolved_tickets,
+            'most_common_category': most_common_category
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Error getting ticket profile: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @tickets_bp.route('/stats', methods=['GET'])
