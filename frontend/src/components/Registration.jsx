@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserPlus, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
-import API_BASE from '../lib/apiBase';
+import API_BASE from '../config/apiBase';
 
 function Registration({ onRegister, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -241,3 +241,4 @@ function Registration({ onRegister, onSwitchToLogin }) {
 }
 
 export default Registration;
+

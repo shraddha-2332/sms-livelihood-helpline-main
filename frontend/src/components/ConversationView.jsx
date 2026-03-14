@@ -12,7 +12,7 @@ import {
   MessageSquare
 } from 'lucide-react'
 import axios from 'axios'
-import API_BASE from '../lib/apiBase'
+import API_BASE from '../config/apiBase'
 
 export default function ConversationView({ ticket, onUpdate }) {
   const [messages, setMessages] = useState([])
@@ -283,3 +283,4 @@ export default function ConversationView({ ticket, onUpdate }) {
     </div>
   )
 }
+

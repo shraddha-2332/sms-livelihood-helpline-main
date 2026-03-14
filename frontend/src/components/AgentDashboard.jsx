@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import TicketList from './TicketList'
 import ConversationView from './ConversationView'
 import { Search, Filter, RefreshCw, Inbox } from 'lucide-react'
-import API_BASE from '../lib/apiBase'
+import API_BASE from '../config/apiBase'
 
 export default function AgentDashboard({ onStatsUpdate }) {
   const [tickets, setTickets] = useState([])
@@ -176,3 +176,4 @@ export default function AgentDashboard({ onStatsUpdate }) {
     </div>
   )
 }
+

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Mail, AlertCircle, CheckCircle } from 'lucide-react';
-import API_BASE from '../lib/apiBase';
+import API_BASE from '../config/apiBase';
 
 function Login({ onLogin, onSwitchToRegister }) {
   const [email, setEmail] = useState('');
@@ -127,3 +127,4 @@ function Login({ onLogin, onSwitchToRegister }) {
 }
 
 export default Login;
+

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Calendar, FileText, TrendingUp, Users, Clock } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import API_BASE from '../lib/apiBase';
+import API_BASE from '../config/apiBase';
 
 const Reports = ({ token }) => {
   const [analytics, setAnalytics] = useState(null);
@@ -404,3 +404,4 @@ const Reports = ({ token }) => {
 };
 
 export default Reports;
+

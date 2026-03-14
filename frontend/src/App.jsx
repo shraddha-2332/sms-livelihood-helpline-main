@@ -7,7 +7,7 @@ import Reports from './components/Reports'
 import Login from './components/Login'
 import Registration from './components/Registration'
 import { Menu, X, LogOut } from 'lucide-react'
-import API_BASE from './lib/apiBase'
+import API_BASE from './config/apiBase'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -184,3 +184,4 @@ function App() {
 }
 
 export default App
+

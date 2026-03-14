@@ -11,7 +11,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react'
-import API_BASE from '../lib/apiBase'
+import API_BASE from '../config/apiBase'
 
 export default function Analytics() {
   const [analytics, setAnalytics] = useState(null)
@@ -259,3 +259,4 @@ function MetricCard({ title, value, change, icon: Icon, color }) {
     </div>
   )
 }
+

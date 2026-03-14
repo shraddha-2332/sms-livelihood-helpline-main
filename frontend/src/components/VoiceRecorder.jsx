@@ -13,7 +13,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import axios from 'axios'
-import API_BASE from '../lib/apiBase'
+import API_BASE from '../config/apiBase'
 
 export default function VoiceRecorder() {
   const [isRecording, setIsRecording] = useState(false)
@@ -369,3 +369,4 @@ export default function VoiceRecorder() {
     </div>
   )
 }
+
