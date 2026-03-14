@@ -1,0 +1,32 @@
+text,intent,language
+मुझे खाद की जानकारी चाहिए,faq_fertilizer,hi
+I need loan information,faq_loan,en
+What is the market price of wheat,market_price,en
+मुझे नौकरी चाहिए,job_search,hi
+How to apply for subsidy,faq_subsidy,en
+धान की कीमत क्या है,market_price,hi
+I want to learn new skills,training,en
+किसान योजना के बारे में बताओ,faq_scheme,hi
+Help with crop disease,agriculture_help,en
+लोन कैसे मिलेगा,faq_loan,hi
+Best fertilizer for rice,faq_fertilizer,en
+खेती में मदद चाहिए,agriculture_help,hi
+Job opportunities in my area,job_search,en
+प्रशिक्षण कार्यक्रम,training,hi
+Government scheme information,faq_scheme,en
+I need information about fertilizers,faq_fertilizer,en
+कृषि में खाद के बारे में जानकारी,faq_fertilizer,hi
+How can I get a loan,faq_loan,en
+मुझे ऋण की जानकारी चाहिए,faq_loan,hi
+What are the current crop prices,market_price,en
+आज गेहूं की कीमत क्या है,market_price,hi
+I am looking for employment,job_search,en
+नौकरी के लिए आवेदन कैसे करें,job_search,hi
+Where can I get training,training,en
+कौशल विकास कार्यक्रम,training,hi
+Tell me about government schemes,faq_scheme,en
+सरकारी योजनाओं की जानकारी,faq_scheme,en
+How to get subsidy,faq_subsidy,en
+सब्सिडी कैसे मिलेगी,faq_subsidy,hi
+My crops are not growing well,agriculture_help,en
+फसल में समस्या है,agriculture_help,hi

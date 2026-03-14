@@ -1,0 +1,39 @@
+{
+  "faq_fertilizer": {
+    "en": "For fertilizer information, visit your nearest agriculture extension center or call our helpline. We'll connect you with an expert.",
+    "hi": "खाद की जानकारी के लिए अपने निकटतम कृषि विस्तार केंद्र पर जाएं या हमारी हेल्पलाइन पर कॉल करें। हम आपको एक विशेषज्ञ से जोड़ेंगे।"
+  },
+  "faq_loan": {
+    "en": "Loan information: Visit www.example.com/loans or reply YES to connect with our loan advisor.",
+    "hi": "ऋण जानकारी: www.example.com/loans पर जाएं या हमारे ऋण सलाहकार से जुड़ने के लिए हाँ का जवाब दें।"
+  },
+  "market_price": {
+    "en": "Current market prices are updated daily. Reply with crop name for specific prices.",
+    "hi": "वर्तमान बाजार मूल्य दैनिक अपडेट किए जाते हैं। विशिष्ट मूल्यों के लिए फसल के नाम के साथ जवाब दें।"
+  },
+  "job_search": {
+    "en": "Job opportunities available. Share your skills and location for relevant job alerts.",
+    "hi": "नौकरी के अवसर उपलब्ध हैं। प्रासंगिक नौकरी अलर्ट के लिए अपने कौशल और स्थान साझा करें।"
+  },
+  "training": {
+    "en": "Vocational training programs available. Reply with your interest area.",
+    "hi": "व्यावसायिक प्रशिक्षण कार्यक्रम उपलब्ध हैं। अपनी रुचि के क्षेत्र के साथ जवाब दें।"
+  },
+  "faq_subsidy": {
+    "en": "Government subsidy schemes are available for farmers. Visit www.example.com/subsidy for details.",
+    "hi": "किसानों के लिए सरकारी सब्सिडी योजनाएं उपलब्ध हैं। विवरण के लिए www.example.com/subsidy पर जाएं।"
+  },
+  "agriculture_help": {
+    "en": "For agricultural assistance, our experts are here to help. Reply with your specific concern.",
+    "hi": "कृषि सहायता के लिए, हमारे विशेषज्ञ मदद के लिए यहां हैं। अपनी विशिष्ट चिंता के साथ जवाब दें।"
+  },
+  "faq_scheme": {
+    "en": "Multiple government schemes available for farmers. Visit www.example.com/schemes for complete list.",
+    "hi": "किसानों के लिए कई सरकारी योजनाएं उपलब्ध हैं। पूरी सूची के लिए www.example.com/schemes पर जाएं।"
+  },
+  "unknown": {
+    "en": "Thank you for contacting us. An agent will respond shortly. For urgent queries, call our helpline.",
+    "hi": "हमसे संपर्क करने के लिए धन्यवाद। एक एजेंट जल्द ही जवाब देगा। तत्काल प्रश्नों के लिए, हमारी हेल्पलाइन पर कॉल करें।"
+  }
+}
+
