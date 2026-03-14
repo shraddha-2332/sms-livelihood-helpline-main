@@ -50,6 +50,8 @@ export default function VoiceRecorder() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const preferredTypes = [
+        'audio/mp4;codecs=mp4a.40.2',
+        'audio/mp4',
         'audio/webm;codecs=opus',
         'audio/webm',
         'audio/ogg;codecs=opus',
@@ -119,7 +121,8 @@ export default function VoiceRecorder() {
     const url = URL.createObjectURL(audioBlob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `recording-${Date.now()}.webm`
+    const ext = recorderMime.includes('mp4') ? 'mp4' : recorderMime.includes('ogg') ? 'ogg' : 'webm'
+    a.download = `recording-${Date.now()}.${ext}`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
