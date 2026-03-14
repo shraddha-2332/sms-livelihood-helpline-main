@@ -12,7 +12,8 @@ export default function Admin() {
     phone: '',
     role: 'agent',
     specialization: 'general',
-    max_concurrent_tickets: 10
+    max_concurrent_tickets: 10,
+    password: 'agent123'
   })
 
   useEffect(() => {
@@ -63,7 +64,8 @@ export default function Admin() {
         phone: '',
         role: 'agent',
         specialization: 'general',
-        max_concurrent_tickets: 10
+        max_concurrent_tickets: 10,
+        password: 'agent123'
       })
       fetchAgents()
     } catch (error) {
@@ -141,6 +143,13 @@ export default function Admin() {
             value={form.max_concurrent_tickets}
             onChange={(e) => setForm({ ...form, max_concurrent_tickets: Number(e.target.value) })}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            placeholder="Password (default: agent123)"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-3"
           />
           <button
             type="submit"

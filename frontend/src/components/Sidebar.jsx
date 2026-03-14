@@ -21,6 +21,12 @@ export default function Sidebar({ currentView, setCurrentView, stats }) {
       description: 'Ticket management'
     },
     { 
+      name: 'Voice Calls', 
+      icon: Phone, 
+      view: 'voice',
+      description: 'Voice management'
+    },
+    { 
       name: 'Analytics', 
       icon: BarChart3, 
       view: 'analytics',
@@ -33,22 +39,16 @@ export default function Sidebar({ currentView, setCurrentView, stats }) {
       description: 'Outcomes & stories'
     },
     {
-      name: 'Admin',
-      icon: Settings,
-      view: 'admin',
-      description: 'Agents & access'
-    },
-    { 
-      name: 'Voice Calls', 
-      icon: Phone, 
-      view: 'voice',
-      description: 'Voice management'
-    },
-    {
       name: 'Reports',
       icon: FileText,
       view: 'reports',
       description: 'Advanced reports'
+    },
+    {
+      name: 'Admin',
+      icon: Settings,
+      view: 'admin',
+      description: 'Agents & access'
     }
   ]
 

@@ -64,6 +64,10 @@ def create_agent():
             is_active=True
         )
         
+        # Set password (required by model)
+        password = data.get('password') or 'agent123'
+        agent.set_password(password)
+        
         db.session.add(agent)
         db.session.commit()
         
@@ -98,6 +102,8 @@ def update_agent(agent_id):
             agent.is_active = data['is_active']
         if 'max_concurrent_tickets' in data:
             agent.max_concurrent_tickets = data['max_concurrent_tickets']
+        if 'password' in data and data['password']:
+            agent.set_password(data['password'])
         
         db.session.commit()
         

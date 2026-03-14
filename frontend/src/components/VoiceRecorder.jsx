@@ -20,6 +20,7 @@ export default function VoiceRecorder() {
   const [audioBlob, setAudioBlob] = useState(null)
   const [audioUrl, setAudioUrl] = useState(null)
   const audioRef = useRef(null)
+  const [recorderMime, setRecorderMime] = useState('')
   const [mediaRecorder, setMediaRecorder] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
@@ -55,6 +56,7 @@ export default function VoiceRecorder() {
         'audio/ogg'
       ]
       const mimeType = preferredTypes.find(type => MediaRecorder.isTypeSupported(type)) || ''
+      setRecorderMime(mimeType || 'audio/webm')
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
       const chunks = []
 
@@ -72,7 +74,8 @@ export default function VoiceRecorder() {
           return
         }
         setAudioBlob(blob)
-        setAudioUrl(URL.createObjectURL(blob))
+        const url = URL.createObjectURL(blob)
+        setAudioUrl(url)
         stream.getTracks().forEach(track => track.stop())
       }
 
@@ -96,6 +99,7 @@ export default function VoiceRecorder() {
   const playRecording = () => {
     if (audioRef.current) {
       audioRef.current
+        .load()
         .play()
         .catch(() => {})
     }
@@ -108,6 +112,18 @@ export default function VoiceRecorder() {
     setAudioBlob(null)
     setAudioUrl(null)
     setResult(null)
+  }
+
+  const downloadRecording = () => {
+    if (!audioBlob) return
+    const url = URL.createObjectURL(audioBlob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `recording-${Date.now()}.webm`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const processVoice = async () => {
@@ -247,12 +263,19 @@ export default function VoiceRecorder() {
                     >
                       <Trash2 size={24} className="text-red-600" />
                     </button>
+                    <button
+                      onClick={downloadRecording}
+                      className="p-3 bg-white rounded-full shadow hover:shadow-md transition-shadow"
+                      title="Download recording"
+                    >
+                      <Send size={20} className="text-blue-600" />
+                    </button>
                   </div>
                   <div className="mt-4">
                     <audio ref={audioRef} controls src={audioUrl} className="w-full" preload="auto" />
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
-                    {audioBlob ? `File size: ${(audioBlob.size / 1024).toFixed(1)} KB` : ''}
+                    {audioBlob ? `File size: ${(audioBlob.size / 1024).toFixed(1)} KB • ${recorderMime}` : ''}
                   </div>
                 </div>
 
