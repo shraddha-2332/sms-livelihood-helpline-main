@@ -67,12 +67,16 @@ export default function VoiceRecorder() {
       recorder.onstop = () => {
         const blobType = recorder.mimeType || 'audio/webm'
         const blob = new Blob(chunks, { type: blobType })
+        if (blob.size === 0) {
+          alert('Recording failed. Please try again and allow microphone access.')
+          return
+        }
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
         stream.getTracks().forEach(track => track.stop())
       }
 
-      recorder.start()
+      recorder.start(100)
       setMediaRecorder(recorder)
       setIsRecording(true)
       setResult(null)
@@ -91,9 +95,9 @@ export default function VoiceRecorder() {
 
   const playRecording = () => {
     if (audioRef.current) {
-      audioRef.current.play().catch(() => {
-        // Ignore autoplay restrictions; user can press play on controls
-      })
+      audioRef.current
+        .play()
+        .catch(() => {})
     }
   }
 
@@ -246,6 +250,9 @@ export default function VoiceRecorder() {
                   </div>
                   <div className="mt-4">
                     <audio ref={audioRef} controls src={audioUrl} className="w-full" preload="auto" />
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    {audioBlob ? `File size: ${(audioBlob.size / 1024).toFixed(1)} KB` : ''}
                   </div>
                 </div>
 

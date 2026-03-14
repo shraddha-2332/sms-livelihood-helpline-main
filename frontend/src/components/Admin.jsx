@@ -48,11 +48,15 @@ export default function Admin() {
     e.preventDefault()
     try {
       setCreating(true)
-      await fetch(`${API_BASE}/api/agents`, {
+      const response = await fetch(`${API_BASE}/api/agents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       })
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to create agent')
+      }
       setForm({
         name: '',
         email: '',
@@ -64,7 +68,7 @@ export default function Admin() {
       fetchAgents()
     } catch (error) {
       console.error('Error creating agent:', error)
-      alert('Failed to create agent. Please try again.')
+      alert(error.message || 'Failed to create agent. Please try again.')
     } finally {
       setCreating(false)
     }
