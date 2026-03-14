@@ -1,6 +1,6 @@
 ﻿from flask import Blueprint, request, jsonify
 from app import db
-from app.models import VoiceCall, User, Message, Ticket
+from app.models import VoiceCall, User, Message, Ticket, Agent
 from app.services.voice_service import process_voice_input, text_to_speech
 from datetime import datetime
 import base64
@@ -101,12 +101,14 @@ def process_voice():
         
         if demo_mode:
             # Create ticket immediately (no worker required)
+            agent = Agent.query.filter_by(is_active=True).first()
             ticket = Ticket(
                 user_id=user.id,
                 subject=transcription[:100],
                 category='general',
                 priority='medium',
-                status='open'
+                status='open',
+                agent_id=agent.id if agent else None
             )
             db.session.add(ticket)
             db.session.flush()

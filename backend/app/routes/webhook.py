@@ -1,7 +1,7 @@
 ﻿from flask import Blueprint, request, jsonify
 from app import db
 from app.utils.redis_client import get_redis_client
-from app.models import User, Message, Ticket
+from app.models import User, Message, Ticket, Agent
 import redis
 import json
 import hashlib
@@ -113,12 +113,15 @@ def receive_sms():
         # Demo mode: create ticket immediately without worker
         demo_direct = request.args.get('demo') in ('1', 'true', 'yes')
         if demo_direct:
+            # Assign to any active agent for demo performance metrics
+            agent = Agent.query.filter_by(is_active=True).first()
             ticket = Ticket(
                 user_id=user.id,
                 subject=text[:100],
                 category='general',
                 priority='medium',
-                status='open'
+                status='open',
+                agent_id=agent.id if agent else None
             )
             db.session.add(ticket)
             db.session.flush()

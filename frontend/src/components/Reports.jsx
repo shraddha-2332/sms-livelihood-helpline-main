@@ -9,6 +9,7 @@ const Reports = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [exportLoading, setExportLoading] = useState(false);
   const [dateRange, setDateRange] = useState(30);
+  const [activeAgentsCount, setActiveAgentsCount] = useState(0);
   
   // Filters for export
   const [filters, setFilters] = useState({
@@ -22,6 +23,7 @@ const Reports = ({ token }) => {
   useEffect(() => {
     fetchAnalytics();
     fetchSummary();
+    fetchActiveAgents();
   }, [dateRange]);
 
   const fetchAnalytics = async () => {
@@ -69,6 +71,18 @@ const Reports = ({ token }) => {
       setSummary(data);
     } catch (error) {
       console.error('Error fetching summary:', error);
+    }
+  };
+
+  const fetchActiveAgents = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/agents`);
+      if (!response.ok) return;
+      const data = await response.json();
+      const count = Array.isArray(data) ? data.filter(a => a.is_active).length : 0;
+      setActiveAgentsCount(count);
+    } catch (error) {
+      console.error('Error fetching agents:', error);
     }
   };
 
@@ -295,6 +309,13 @@ const Reports = ({ token }) => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
+                  {analytics.agent_performance.length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-4 text-sm text-gray-500">
+                        No agent performance data yet. Seed demo data to populate this table.
+                      </td>
+                    </tr>
+                  )}
                   {analytics.agent_performance.map((agent) => (
                     <tr key={agent.agent_id}>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -341,7 +362,7 @@ const Reports = ({ token }) => {
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <p className="text-sm text-gray-600">Active Agents</p>
-                <p className="text-2xl font-bold text-purple-600 mt-2">{analytics.agent_performance.length}</p>
+                <p className="text-2xl font-bold text-purple-600 mt-2">{activeAgentsCount}</p>
               </div>
             </div>
           </div>
