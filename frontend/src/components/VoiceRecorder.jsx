@@ -234,6 +234,9 @@ export default function VoiceRecorder() {
                       <Trash2 size={24} className="text-red-600" />
                     </button>
                   </div>
+                  <div className="mt-4">
+                    <audio controls src={audioUrl} className="w-full" />
+                  </div>
                 </div>
 
                 {/* Process Button */}

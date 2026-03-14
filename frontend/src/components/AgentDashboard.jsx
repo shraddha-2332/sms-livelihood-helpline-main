@@ -112,7 +112,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
   return (
     <div className="h-full flex">
       {/* Tickets List */}
-      <div className="w-96 border-r border-gray-200 flex flex-col bg-white">
+      <div className="w-[420px] border-r border-gray-200 flex flex-col bg-white">
         {/* Search and Filters */}
         <div className="p-4 border-b border-gray-200 space-y-3">
           {/* Search Bar */}
@@ -128,11 +128,11 @@ export default function AgentDashboard({ onStatsUpdate }) {
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 min-w-[140px] px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Status</option>
               <option value="open">Open</option>
@@ -144,7 +144,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
             <select
               value={filters.priority}
               onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 min-w-[140px] px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Priority</option>
               <option value="urgent">Urgent</option>
@@ -161,10 +161,12 @@ export default function AgentDashboard({ onStatsUpdate }) {
             >
               <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
             </button>
+          </div>
+          <div className="flex gap-2">
             <button
               onClick={handleCreateDemoTicket}
               disabled={creatingDemo}
-              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               title="Create a demo ticket"
             >
               {creatingDemo ? 'Creating...' : 'Create Demo Ticket'}
@@ -172,7 +174,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
             <button
               onClick={handleSeedDemoData}
               disabled={seedingDemo}
-              className="px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-black disabled:opacity-50"
+              className="flex-1 px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-black disabled:opacity-50"
               title="Seed demo data"
             >
               {seedingDemo ? 'Seeding...' : 'Seed Demo Data'}
@@ -210,16 +212,16 @@ export default function AgentDashboard({ onStatsUpdate }) {
             onUpdate={handleTicketUpdate}
           />
         ) : (
-          <div className="h-full flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+          <div className="h-full flex items-center justify-center bg-gray-50 p-6">
+            <div className="w-full max-w-2xl text-center bg-white border border-gray-200 rounded-2xl p-10 shadow-sm">
+              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <Search size={48} className="text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 Select a ticket
               </h3>
               <p className="text-gray-600">
-                Choose a ticket from the list to view conversation
+                Choose a ticket from the list to view conversation and resolution details.
               </p>
             </div>
           </div>
