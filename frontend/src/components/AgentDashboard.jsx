@@ -17,6 +17,9 @@ export default function AgentDashboard({ onStatsUpdate }) {
   const [refreshing, setRefreshing] = useState(false)
   const [creatingDemo, setCreatingDemo] = useState(false)
   const [seedingDemo, setSeedingDemo] = useState(false)
+  const [smsPhone, setSmsPhone] = useState('+91')
+  const [smsText, setSmsText] = useState('')
+  const [sendingSms, setSendingSms] = useState(false)
 
   useEffect(() => {
     fetchTickets()
@@ -84,6 +87,32 @@ export default function AgentDashboard({ onStatsUpdate }) {
       alert('Failed to seed demo data. Please try again.')
     } finally {
       setSeedingDemo(false)
+    }
+  }
+
+  const handleSendSmsDemo = async (e) => {
+    e.preventDefault()
+    if (!smsPhone.trim() || !smsText.trim()) {
+      alert('Please enter phone number and message.')
+      return
+    }
+    try {
+      setSendingSms(true)
+      await fetch(`${API_BASE}/webhook/sms?demo=1`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: smsPhone.trim(),
+          body: smsText.trim()
+        })
+      })
+      setSmsText('')
+      fetchTickets(true)
+    } catch (error) {
+      console.error('Error sending demo SMS:', error)
+      alert('Failed to send demo SMS. Please try again.')
+    } finally {
+      setSendingSms(false)
     }
   }
 
@@ -180,6 +209,34 @@ export default function AgentDashboard({ onStatsUpdate }) {
               {seedingDemo ? 'Seeding...' : 'Seed Demo Data'}
             </button>
           </div>
+        </div>
+
+        {/* SMS Simulator */}
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <h4 className="text-sm font-semibold text-gray-800 mb-2">SMS Simulator (Demo)</h4>
+          <form onSubmit={handleSendSmsDemo} className="space-y-2">
+            <input
+              type="tel"
+              value={smsPhone}
+              onChange={(e) => setSmsPhone(e.target.value)}
+              placeholder="+91XXXXXXXXXX"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <textarea
+              value={smsText}
+              onChange={(e) => setSmsText(e.target.value)}
+              rows={2}
+              placeholder="Type an SMS message..."
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              disabled={sendingSms}
+              className="w-full px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+              {sendingSms ? 'Sending...' : 'Send SMS (Demo)'}
+            </button>
+          </form>
         </div>
 
         {/* Ticket List */}
