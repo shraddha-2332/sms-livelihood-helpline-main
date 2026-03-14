@@ -21,6 +21,11 @@ export default function VoiceRecorder() {
   const [audioUrl, setAudioUrl] = useState(null)
   const audioRef = useRef(null)
   const [recorderMime, setRecorderMime] = useState('')
+  const [devices, setDevices] = useState([])
+  const [selectedDeviceId, setSelectedDeviceId] = useState('')
+  const [inputLevel, setInputLevel] = useState(0)
+  const meterIntervalRef = useRef(null)
+  const audioContextRef = useRef(null)
   const [mediaRecorder, setMediaRecorder] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
@@ -35,6 +40,22 @@ export default function VoiceRecorder() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    const loadDevices = async () => {
+      try {
+        const deviceList = await navigator.mediaDevices.enumerateDevices()
+        const inputs = deviceList.filter((d) => d.kind === 'audioinput')
+        setDevices(inputs)
+        if (!selectedDeviceId && inputs.length > 0) {
+          setSelectedDeviceId(inputs[0].deviceId)
+        }
+      } catch (error) {
+        console.error('Error listing audio devices:', error)
+      }
+    }
+    loadDevices()
+  }, [selectedDeviceId])
+
   const fetchVoiceCalls = async () => {
     try {
       const response = await axios.get(`${API_BASE}/api/voice/calls`)
@@ -48,7 +69,12 @@ export default function VoiceRecorder() {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const constraints = {
+        audio: selectedDeviceId
+          ? { deviceId: { exact: selectedDeviceId }, echoCancellation: true, noiseSuppression: true }
+          : true
+      }
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
       const preferredTypes = [
         'audio/mp4;codecs=mp4a.40.2',
         'audio/mp4',
@@ -81,6 +107,27 @@ export default function VoiceRecorder() {
         stream.getTracks().forEach(track => track.stop())
       }
 
+      // Setup input level meter
+      try {
+        if (audioContextRef.current) {
+          audioContextRef.current.close()
+        }
+        const audioContext = new AudioContext()
+        audioContextRef.current = audioContext
+        const source = audioContext.createMediaStreamSource(stream)
+        const analyser = audioContext.createAnalyser()
+        analyser.fftSize = 256
+        source.connect(analyser)
+        const dataArray = new Uint8Array(analyser.frequencyBinCount)
+        meterIntervalRef.current = setInterval(() => {
+          analyser.getByteFrequencyData(dataArray)
+          const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
+          setInputLevel(avg)
+        }, 100)
+      } catch (e) {
+        console.warn('Audio meter not available:', e)
+      }
+
       recorder.start(100)
       setMediaRecorder(recorder)
       setIsRecording(true)
@@ -95,6 +142,14 @@ export default function VoiceRecorder() {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop()
       setIsRecording(false)
+      if (meterIntervalRef.current) {
+        clearInterval(meterIntervalRef.current)
+        meterIntervalRef.current = null
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close()
+        audioContextRef.current = null
+      }
     }
   }
 
@@ -210,6 +265,24 @@ export default function VoiceRecorder() {
             </div>
           </div>
 
+          {/* Microphone Device */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Microphone Device
+            </label>
+            <select
+              value={selectedDeviceId}
+              onChange={(e) => setSelectedDeviceId(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {devices.map((d) => (
+                <option key={d.deviceId} value={d.deviceId}>
+                  {d.label || 'Microphone'}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Recording Controls */}
           <div className="flex flex-col items-center justify-center space-y-6 py-8">
             {/* Recording Button */}
@@ -242,6 +315,19 @@ export default function VoiceRecorder() {
               <p className="text-gray-600 text-center">
                 Click the microphone to start recording
               </p>
+            )}
+
+            {/* Input Level Meter */}
+            {isRecording && (
+              <div className="w-full max-w-md">
+                <div className="text-xs text-gray-500 mb-1">Input level</div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-2 bg-green-500"
+                    style={{ width: `${Math.min(100, (inputLevel / 128) * 100)}%` }}
+                  />
+                </div>
+              </div>
             )}
 
             {/* Audio Playback Controls */}
