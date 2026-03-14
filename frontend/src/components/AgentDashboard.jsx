@@ -15,6 +15,7 @@ export default function AgentDashboard({ onStatsUpdate }) {
   })
   const [searchQuery, setSearchQuery] = useState('')
   const [refreshing, setRefreshing] = useState(false)
+  const [creatingDemo, setCreatingDemo] = useState(false)
 
   useEffect(() => {
     fetchTickets()
@@ -49,6 +50,27 @@ export default function AgentDashboard({ onStatsUpdate }) {
 
   const handleRefresh = () => {
     fetchTickets(true)
+  }
+
+  const handleCreateDemoTicket = async () => {
+    try {
+      setCreatingDemo(true)
+      const payload = {
+        from: '+919834522785',
+        body: 'I need information about loans for farmers'
+      }
+      await fetch(`${API_BASE}/webhook/sms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      fetchTickets(true)
+    } catch (error) {
+      console.error('Error creating demo ticket:', error)
+      alert('Failed to create demo ticket. Please try again.')
+    } finally {
+      setCreatingDemo(false)
+    }
   }
 
   const handleTicketUpdate = () => {
@@ -124,6 +146,14 @@ export default function AgentDashboard({ onStatsUpdate }) {
               title="Refresh"
             >
               <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            </button>
+            <button
+              onClick={handleCreateDemoTicket}
+              disabled={creatingDemo}
+              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              title="Create a demo ticket"
+            >
+              {creatingDemo ? 'Creating...' : 'Create Demo Ticket'}
             </button>
           </div>
         </div>
