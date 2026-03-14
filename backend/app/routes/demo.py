@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app import db
-from app.models import User, Ticket, Message
+from app.models import User, Ticket, Message, Agent
 from datetime import datetime, timedelta
 import random
 
@@ -37,6 +37,30 @@ def seed_demo_data():
         priorities = ['low', 'medium', 'high', 'urgent']
         statuses = ['open', 'assigned', 'resolved']
         
+        # Ensure demo agents exist
+        demo_agents = [
+            {'name': 'Admin Agent', 'email': 'admin@helpline.com', 'role': 'admin', 'specialization': 'general'},
+            {'name': 'Agriculture Expert', 'email': 'agri@helpline.com', 'role': 'agent', 'specialization': 'agriculture'},
+            {'name': 'Loan Advisor', 'email': 'loan@helpline.com', 'role': 'agent', 'specialization': 'finance'},
+            {'name': 'Training Guide', 'email': 'train@helpline.com', 'role': 'agent', 'specialization': 'training'}
+        ]
+        agents = []
+        for item in demo_agents:
+            agent = Agent.query.filter_by(email=item['email']).first()
+            if not agent:
+                agent = Agent(
+                    name=item['name'],
+                    email=item['email'],
+                    role=item['role'],
+                    specialization=item['specialization'],
+                    is_active=True,
+                    max_concurrent_tickets=10
+                )
+                agent.set_password('agent123')
+                db.session.add(agent)
+                db.session.flush()
+            agents.append(agent)
+
         created = 0
         for i in range(count):
             phone = f"+91{random.randint(7000000000, 9999999999)}"
@@ -54,12 +78,14 @@ def seed_demo_data():
             status = random.choice(statuses)
             created_at = datetime.utcnow() - timedelta(days=random.randint(0, 14), hours=random.randint(0, 10))
             
+            assigned_agent = random.choice(agents) if agents else None
             ticket = Ticket(
                 user_id=user.id,
                 subject=subject,
                 category=category,
                 priority=priority,
                 status=status,
+                agent_id=assigned_agent.id if assigned_agent else None,
                 created_at=created_at,
                 updated_at=created_at
             )
