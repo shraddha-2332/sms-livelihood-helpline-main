@@ -1,9 +1,10 @@
 ﻿from flask import Blueprint, request, jsonify
 from app import db
-from app.models import VoiceCall, User, Message
+from app.models import VoiceCall, User, Message, Ticket
 from app.services.voice_service import process_voice_input, text_to_speech
 from datetime import datetime
 import base64
+import os
 
 voice_bp = Blueprint('voice', __name__)
 
@@ -49,9 +50,15 @@ def process_voice():
         db.session.add(voice_call)
         db.session.commit()
         
+        demo_mode = request.args.get('demo') in ('1', 'true', 'yes') or os.environ.get('DEMO_MODE', 'false').lower() == 'true'
+        
         # Process voice to text (mock implementation)
         # In production, integrate with Google Speech-to-Text, Azure Speech, or Whisper
         transcription, duration = process_voice_input(audio_data, user.language)
+        
+        if demo_mode and not transcription:
+            transcription = 'Demo voice message: I need information about loans for farmers.'
+            duration = max(1, int(len(audio_data) / 8000))
         
         if not transcription:
             voice_call.status = 'failed'
@@ -76,23 +83,37 @@ def process_voice():
         db.session.add(message)
         db.session.commit()
         
-        # Queue for processing (similar to SMS)
-        import redis
-        from app.utils.redis_client import get_redis_client
-        import json
-        import os
-        
-        redis_client = get_redis_client(decode_responses=True)
-        
-        queue_data = {
-            'message_id': message.id,
-            'user_id': user.id,
-            'phone': phone,
-            'text': transcription,
-            'source': 'voice',
-            'timestamp': datetime.utcnow().isoformat()
-        }
-        redis_client.lpush('incoming_sms', json.dumps(queue_data))
+        if demo_mode:
+            # Create ticket immediately (no worker required)
+            ticket = Ticket(
+                user_id=user.id,
+                subject=transcription[:100],
+                category='general',
+                priority='medium',
+                status='open'
+            )
+            db.session.add(ticket)
+            db.session.flush()
+            message.ticket_id = ticket.id
+            message.status = 'processed'
+            db.session.commit()
+        else:
+            # Queue for processing (similar to SMS)
+            import redis
+            from app.utils.redis_client import get_redis_client
+            import json
+            
+            redis_client = get_redis_client(decode_responses=True)
+            
+            queue_data = {
+                'message_id': message.id,
+                'user_id': user.id,
+                'phone': phone,
+                'text': transcription,
+                'source': 'voice',
+                'timestamp': datetime.utcnow().isoformat()
+            }
+            redis_client.lpush('incoming_sms', json.dumps(queue_data))
         
         return jsonify({
             'status': 'success',

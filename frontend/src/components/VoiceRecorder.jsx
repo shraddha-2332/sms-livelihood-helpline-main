@@ -142,7 +142,7 @@ export default function VoiceRecorder() {
       reader.onloadend = async () => {
         const base64Audio = reader.result.split(',')[1]
 
-        const response = await axios.post(`${API_BASE}/api/voice/process`, {
+        const response = await axios.post(`${API_BASE}/api/voice/process?demo=1`, {
           phone: phoneNumber,
           audio_base64: base64Audio
         })
@@ -156,7 +156,8 @@ export default function VoiceRecorder() {
       }
     } catch (error) {
       console.error('Error processing voice:', error)
-      alert('Failed to process voice. Please try again.')
+      const message = error?.response?.data?.error || 'Failed to process voice. Please try again.'
+      alert(message)
     } finally {
       setProcessing(false)
     }
