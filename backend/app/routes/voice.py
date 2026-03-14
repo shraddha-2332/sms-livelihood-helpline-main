@@ -71,7 +71,7 @@ def process_voice():
         # Update voice call record
         voice_call.transcription = transcription
         voice_call.duration = duration
-        voice_call.status = 'completed'
+        voice_call.status = 'received' if demo_mode else 'completed'
         
         # Create message from transcription
         demo_intent_map = {

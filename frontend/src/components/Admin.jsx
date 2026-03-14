@@ -66,7 +66,8 @@ export default function Admin() {
       role: agent.role,
       specialization: agent.specialization,
       max_concurrent_tickets: agent.max_concurrent_tickets || 10,
-      password: ''
+      password: '',
+      is_active: agent.is_active
     })
   }
 
@@ -304,6 +305,14 @@ export default function Admin() {
                   <option value="employment">Employment</option>
                 </select>
               </div>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={editing.is_active ?? true}
+                  onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })}
+                />
+                Active agent
+              </label>
               <input
                 type="number"
                 min="1"

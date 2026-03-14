@@ -468,10 +468,11 @@ export default function VoiceRecorder() {
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                           call.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          call.status === 'received' ? 'bg-blue-100 text-blue-800' :
                           call.status === 'failed' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {call.status}
+                          {call.status === 'completed' ? 'transcribed' : call.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
