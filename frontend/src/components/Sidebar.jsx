@@ -32,6 +32,12 @@ export default function Sidebar({ currentView, setCurrentView, stats }) {
       view: 'impact',
       description: 'Outcomes & stories'
     },
+    {
+      name: 'Admin',
+      icon: Settings,
+      view: 'admin',
+      description: 'Agents & access'
+    },
     { 
       name: 'Voice Calls', 
       icon: Phone, 

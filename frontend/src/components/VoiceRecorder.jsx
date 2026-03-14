@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { 
   Mic, 
   StopCircle, 
@@ -19,6 +19,7 @@ export default function VoiceRecorder() {
   const [isRecording, setIsRecording] = useState(false)
   const [audioBlob, setAudioBlob] = useState(null)
   const [audioUrl, setAudioUrl] = useState(null)
+  const audioRef = useRef(null)
   const [mediaRecorder, setMediaRecorder] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
@@ -47,7 +48,14 @@ export default function VoiceRecorder() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const recorder = new MediaRecorder(stream)
+      const preferredTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/ogg'
+      ]
+      const mimeType = preferredTypes.find(type => MediaRecorder.isTypeSupported(type)) || ''
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
       const chunks = []
 
       recorder.ondataavailable = (e) => {
@@ -57,7 +65,8 @@ export default function VoiceRecorder() {
       }
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' })
+        const blobType = recorder.mimeType || 'audio/webm'
+        const blob = new Blob(chunks, { type: blobType })
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
         stream.getTracks().forEach(track => track.stop())
@@ -81,9 +90,10 @@ export default function VoiceRecorder() {
   }
 
   const playRecording = () => {
-    if (audioUrl) {
-      const audio = new Audio(audioUrl)
-      audio.play()
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {
+        // Ignore autoplay restrictions; user can press play on controls
+      })
     }
   }
 
@@ -235,7 +245,7 @@ export default function VoiceRecorder() {
                     </button>
                   </div>
                   <div className="mt-4">
-                    <audio controls src={audioUrl} className="w-full" />
+                    <audio ref={audioRef} controls src={audioUrl} className="w-full" preload="auto" />
                   </div>
                 </div>
 
